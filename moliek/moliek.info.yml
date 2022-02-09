@@ -1,0 +1,7 @@
+name: moliek
+description: 4 module php
+
+core: 8.x
+type: module
+package: Custom
+core_version_requirement: ^8 || ^9

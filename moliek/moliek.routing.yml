@@ -1,0 +1,6 @@
+entity.response.settings:
+  path: '/moliek'
+  defaults:
+    _form: '\Drupal\moliek\Form\MoliekForm'
+  requirements:
+    _permission: 'access content'
