@@ -98,6 +98,7 @@ class MoliekForm extends FormBase {
           '#type' => 'actions',
           'button' => [
             '#type' => 'submit',
+            '#name' => "add_row_$t",
             '#value' => $this->t("Add Year"),
             '#submit' => ['::addRow'],
             '#data_id' => $t,
@@ -154,8 +155,8 @@ class MoliekForm extends FormBase {
    *
    */
   public function addRow(array $form, FormStateInterface $form_state) {
-    $t = $form_state->getTriggeringElement();
-    // $this->countRow[]++;
+    $t = $form_state->getTriggeringElement()['#data_id'];
+    $this->countRow[$t]++;
     $form_state->setRebuild();
     return $form;
   }
