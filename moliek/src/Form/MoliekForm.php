@@ -35,7 +35,7 @@ class MoliekForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
-    $form['#prefix'] = '<div class="moliek-form">';
+    $form['#prefix'] = '<div id="moliek-form">';
     $form['#suffix'] = '</div>';
     $this->createTable($form, $form_state);
 
@@ -93,32 +93,46 @@ class MoliekForm extends FormBase {
       'ytd' => $this->t('YTD'),
     ];
     for ($t = 0; $t < $this->countTable; $t++) {
-      $form["add_year_$t"] = [
-        '#type' => 'button',
-        '#value' => $this->t("Add Year"),
-      ];
       $form["table_$t"] = [
-        '#type' => 'table',
-        '#header' => $header_title,
-        '#empty' => t('No content available.'),
+        'actions' => [
+          '#type' => 'actions',
+          'button' => [
+            '#type' => 'submit',
+            '#value' => $this->t("Add Year"),
+            '#submit' => ['::addRow'],
+            '#data_id' => $t,
+            '#ajax' => [
+              'event' => 'click',
+              'progress' => 'none',
+              'callback' => '::refreshAjax',
+              'wrapper' => 'moliek-form',
+            ],
+          ],
+        ],
+        'table' => [
+          '#type' => 'table',
+          '#header' => $header_title,
+          '#empty' => t('No content available.'),
+        ],
       ];
       for ($r = 0; $r < $this->countRow[$t]; $r++) {
         foreach ($header_title as $c) {
-          $form["table_$t"]["rows_$r"]["$c"] = [
+          $form["table_$t"]['table']["rows_$r"]["$c"] = [
             '#type' => 'number',
           ];
           if (in_array("$c", ['Q1', 'Q2', 'Q3', 'Q4', 'YTD'])) {
-            $form["table_$t"]["rows_$r"]["$c"] = [
+            $form["table_$t"]['table']["rows_$r"]["$c"] = [
               '#type' => 'number',
               '#disabled' => TRUE,
             ];
           }
           if ("$c" == 'Year') {
-            $form["table_$t"]["rows_$r"]["$c"] = [
+            $form["table_$t"]['table']["rows_$r"]["$c"] = [
               '#type' => 'number',
               '#disabled' => TRUE,
               '#default_value' => date('Y') - $this->countRow[$t] + $r + 1,
             ];
+
           }
         }
       }
@@ -132,6 +146,16 @@ class MoliekForm extends FormBase {
   public function addTable(array $form, FormStateInterface $form_state) {
     $this->countTable++;
     $this->countRow[] = 1;
+    $form_state->setRebuild();
+    return $form;
+  }
+
+  /**
+   *
+   */
+  public function addRow(array $form, FormStateInterface $form_state) {
+    $t = $form_state->getTriggeringElement();
+    // $this->countRow[]++;
     $form_state->setRebuild();
     return $form;
   }
