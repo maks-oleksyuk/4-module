@@ -1,33 +1,44 @@
-.table {
-  margin-bottom: 3rem!important;
-}
+.path-moliek {
+  .moliek-form {
+    margin: 10px 0;
+    overflow: scroll;
 
-.form-item, .form-actions{
-  margin-bottom: 0 !important;
-}
+    .btn {
+      margin: 0 1rem !important;
+    }
 
-thead {
-  text-align: center;
-}
+    .table {
+      margin-bottom: 2rem !important;
 
-tbody {
-  td {
-    padding: 5px 2px !important;
+      thead {
+        text-align: center;
+      }
 
-    input {
-      margin: 0 auto;
-      max-width: 50px;
-      text-align: center;
-      padding: 5px 2px !important;
+      tbody {
+        td {
+          padding: 5px 2px !important;
+
+          input {
+            margin: 0 auto;
+            max-width: 55px;
+            text-align: center;
+            padding: 5px 2px !important;
+          }
+        }
+      }
+    }
+
+    .form-item, .form-actions {
+      margin-bottom: 0 !important;
+    }
+
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+    }
+
+    input[type='number'] {
+      -moz-appearance: textfield;
     }
   }
-}
-
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
 }
