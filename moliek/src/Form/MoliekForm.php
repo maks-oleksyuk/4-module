@@ -35,12 +35,14 @@ class MoliekForm extends FormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+    // Add a wrapper div to update ajax.
     $form['#prefix'] = '<div id="moliek-form">';
     $form['#suffix'] = '</div>';
+    // Attach style files.
     $form['#attached']['library'][] = 'moliek/style';
-
+    // Start the function of creating tables.
     $this->createTable($form, $form_state);
-
+    // Add a button to add a table.
     $form['add_table'] = [
       '#type' => 'submit',
       '#value' => $this->t("Add Table"),
@@ -58,7 +60,7 @@ class MoliekForm extends FormBase {
         'wrapper' => 'moliek-form',
       ],
     ];
-
+    // Add a submit button.
     $form['submit'] = [
       '#type' => 'submit',
       '#name' => 'submit',
@@ -86,6 +88,7 @@ class MoliekForm extends FormBase {
    *   The form structures.
    */
   public function createTable(array &$form, FormStateInterface $form_state): array {
+    // Declare an array of table headers.
     $header_title = [
       'year' => $this->t('Year'),
       'jan' => $this->t('Jan'),
@@ -106,7 +109,9 @@ class MoliekForm extends FormBase {
       'q4' => $this->t('Q4'),
       'ytd' => $this->t('YTD'),
     ];
+    // Create a specified number of tables.
     for ($t = 0; $t < $this->countTable; $t++) {
+      // Add a button to add row in table.
       $form["button_$t"] = [
         '#type' => 'submit',
         '#name' => $t,
@@ -124,16 +129,21 @@ class MoliekForm extends FormBase {
           'wrapper' => 'moliek-form',
         ],
       ];
+      // Create a table with headings.
       $form["table_$t"] = [
         '#type' => 'table',
         '#header' => $header_title,
         '#empty' => t('No content available.'),
       ];
+      // Create a specified number of row in table.
       for ($r = $this->countRow[$t]; $r > 0; $r--) {
+        // Create cells in a row.
         foreach ($header_title as $c) {
+          // Assign the required type to all cells.
           $form["table_$t"]["rows_$r"]["$c"] = [
             '#type' => 'number',
           ];
+          // Turn off unnecessary cells.
           if (in_array("$c", ['Q1', 'Q2', 'Q3', 'Q4', 'YTD'])) {
             $form["table_$t"]["rows_$r"]["$c"] = [
               '#type' => 'number',
@@ -141,6 +151,7 @@ class MoliekForm extends FormBase {
             ];
           }
         }
+        // Adjust the cell with the year.
         $form["table_$t"]["rows_$r"]['Year'] = [
           '#type' => 'number',
           '#disabled' => TRUE,
@@ -163,7 +174,9 @@ class MoliekForm extends FormBase {
    *   The form structures.
    */
   public function addTable(array $form, FormStateInterface $form_state): array {
+    // Increase the number of tables.
     $this->countTable++;
+    // Set 1 row for the new table.
     $this->countRow[] = 1;
     $form_state->setRebuild();
     return $form;
@@ -181,7 +194,9 @@ class MoliekForm extends FormBase {
    *   The form structures.
    */
   public function addRow(array $form, FormStateInterface $form_state): array {
+    // Get the ID of the pressed button.
     $t = $form_state->getTriggeringElement()['#name'];
+    // Increase the number of rows for the desired table.
     $this->countRow[$t]++;
     $form_state->setRebuild();
     return $form;
@@ -206,13 +221,17 @@ class MoliekForm extends FormBase {
    * {@inheritdoc}
    */
   public function validateForm(array &$form, FormStateInterface $form_state) {
+    // Validate only when press the button submit.
     if ($form_state->getTriggeringElement()['#name'] !== 'submit') {
       return;
     }
+    // Obtain data from the table.
     $tables = $form_state->getValues();
+    // The identifier of the table with the least number of rows.
     $m = array_search(min($this->countRow), $this->countRow);
-
+    // Loop for all table.
     for ($t = 0; $t < $this->countTable; $t++) {
+      // Variable whether an item is found in a row.
       $hasValue = 0;
       $hasEmpty = 0;
       for ($r = 1; $r <= $this->countRow[$t]; $r++) {
@@ -261,28 +280,29 @@ class MoliekForm extends FormBase {
       for ($t = 0; $t < $this->countTable; $t++) {
         for ($r = 1; $r <= $this->countRow[$t]; $r++) {
           $rt = $form_state->getValue(["table_$t", "rows_$r"]);
-          $q1 = intval($rt['Jan']) + intval($rt['Feb']) + intval($rt['Mar']);
-          if ($q1) {
+          $q1 = $q2 = $q3 = $q4 = 0;
+          if ($rt['Jan'] != "" || $rt['Feb'] != "" || $rt['Mar'] != "") {
+            $q1 = (int) $rt['Jan'] + (int) $rt['Feb'] + (int) $rt['Mar'];
             $q1 = round(($q1 + 1) / 3, 2);
             $form["table_$t"]["rows_$r"]['Q1']['#value'] = $q1;
           }
-          $q2 = intval($rt['Apr']) + intval($rt['May']) + intval($rt['Jun']);
-          if ($q2) {
+          if ($rt['Apr'] != "" || $rt['May'] != "" || $rt['Jun'] != "") {
+            $q2 = (int) $rt['Apr'] + (int) $rt['May'] + (int) $rt['Jun'];
             $q2 = round(($q2 + 1) / 3, 2);
             $form["table_$t"]["rows_$r"]['Q2']['#value'] = $q2;
           }
-          $q3 = intval($rt['Jul']) + intval($rt['Aug']) + intval($rt['Sep']);
-          if ($q3) {
+          if ($rt['Jul'] != "" || $rt['Aug'] != "" || $rt['Sep'] != "") {
+            $q3 = (int) $rt['Jul'] + (int) $rt['Aug'] + (int) $rt['Sep'];
             $q3 = round(($q3 + 1) / 3, 2);
             $form["table_$t"]["rows_$r"]['Q3']['#value'] = $q3;
           }
-          $q4 = intval($rt['Oct']) + intval($rt['Nov']) + intval($rt['Dec']);
-          if ($q4) {
+          if ($rt['Oct'] != "" || $rt['Nov'] != "" || $rt['Dec'] != "") {
+            $q4 = (int) $rt['Oct'] + (int) $rt['Nov'] + (int) $rt['Dec'];
             $q4 = round(($q4 + 1) / 3, 2);
             $form["table_$t"]["rows_$r"]['Q4']['#value'] = $q4;
           }
-          $ytd = intval($q1) + intval($q2) + intval($q3) + intval($q4);
-          if ($ytd) {
+          if ($q1 || $q2 || $q3 || $q4) {
+            $ytd = $q1 + $q2 + $q3 + $q4;
             $ytd = round(($ytd + 1) / 4, 2);
             $form["table_$t"]["rows_$r"]['YTD']['#value'] = $ytd;
           }
