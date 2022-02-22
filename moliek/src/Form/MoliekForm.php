@@ -133,7 +133,7 @@ class MoliekForm extends FormBase {
       $form["table_$t"] = [
         '#type' => 'table',
         '#header' => $header_title,
-        '#empty' => t('No content available.'),
+        '#empty' => $this->t('No content available.'),
       ];
       // Create a specified number of row in table.
       for ($r = $this->countRow[$t]; $r > 0; $r--) {
@@ -233,35 +233,47 @@ class MoliekForm extends FormBase {
     for ($t = 0; $t < $this->countTable; $t++) {
       // Variable whether an item is found in a row.
       $hasValue = 0;
+      // Variable whether a gap is found in the table row.
       $hasEmpty = 0;
+      // Cycle for tables.
       for ($r = 1; $r <= $this->countRow[$t]; $r++) {
+        // Loop for table rows.
         foreach (array_reverse($tables["table_$t"]["rows_$r"]) as $key => $i) {
+          // Disable checking for unnecessary cells.
           if (in_array("$key", ['Year', 'Q1', 'Q2', 'Q3', 'Q4', 'YTD'])) {
             goto end;
           }
+          // Check for the corresponding rows of the table.
           if ($r <= $this->countRow[$m]) {
+            // Check for filled value.
             if (!$hasValue && !$hasEmpty && $i !== "") {
               $hasValue = 1;
             }
+            // Check for an empty value after finding the value.
             if ($hasValue && !$hasEmpty && $i == "") {
               $hasEmpty = 1;
             }
+            // Write down the error if we find a gap.
             if ($hasValue && $hasEmpty && $i !== "") {
               $form_state->setErrorByName("Empty cell", 'Invalid');
               break 3;
             }
-            if ($tables["table_$m"]["rows_$r"][$key] == "" && $i !== "" || $tables["table_$m"]["rows_$r"][$key] !== "" && $i == "") {
-              $form_state->setErrorByName("Not the same tables 1", 'Invalid');
+            // Write down an error if rows of tables do not coincide.
+            if ($tables["table_$m"]["rows_$r"][$key] == "" && $i !== "" ||
+              $tables["table_$m"]["rows_$r"][$key] !== "" && $i == "") {
+              $form_state->setErrorByName("Not the same tables", 'Invalid');
               break 3;
             }
           }
+          // Check for inappropriate values in rows.
           elseif ($i !== "") {
-            $form_state->setErrorByName("Not the same tables 2", 'Invalid');
+            $form_state->setErrorByName("Not the same tables", 'Invalid');
             break 3;
           }
           end:
         }
       }
+      // Check on an empty table.
       if (!$hasValue && !$hasEmpty) {
         $form_state->setErrorByName("Empty table", 'Invalid');
       }
@@ -272,15 +284,22 @@ class MoliekForm extends FormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    // Show error if available.
     if ($form_state->getErrors()) {
       $this->messenger()->addError("Invalid");
       $form_state->clearErrors();
     }
     else {
+      // Loop for all table.
       for ($t = 0; $t < $this->countTable; $t++) {
+        // Loop for table rows.
         for ($r = 1; $r <= $this->countRow[$t]; $r++) {
+          // Get data from a table row.
           $rt = $form_state->getValue(["table_$t", "rows_$r"]);
+          // Variables for recording quarterly values.
           $q1 = $q2 = $q3 = $q4 = 0;
+          // If there is a desired value, calculate the formula
+          // and record the result in tables.
           if ($rt['Jan'] != "" || $rt['Feb'] != "" || $rt['Mar'] != "") {
             $q1 = (int) $rt['Jan'] + (int) $rt['Feb'] + (int) $rt['Mar'];
             $q1 = round(($q1 + 1) / 3, 2);
@@ -308,7 +327,7 @@ class MoliekForm extends FormBase {
           }
         }
       }
-
+      // Successful validation message.
       $this->messenger()->addStatus("Valid");
     }
   }

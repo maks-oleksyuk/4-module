@@ -20,7 +20,8 @@
   text-align: center;
   padding: 5px 2px !important;
 }
-.path-moliek .moliek-form .form-item, .path-moliek .moliek-form .form-actions {
+.path-moliek .moliek-form .form-item,
+.path-moliek .moliek-form .form-actions {
   margin-bottom: 0 !important;
 }
 .path-moliek .moliek-form input::-webkit-outer-spin-button,
